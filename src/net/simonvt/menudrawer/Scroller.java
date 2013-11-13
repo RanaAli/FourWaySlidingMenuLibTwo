@@ -58,7 +58,7 @@ class Scroller {
 
 	private float mVelocity;
 
-	private static final int DEFAULT_DURATION = 250;
+	private static int DEFAULT_DURATION = 250;
 	private static final int SCROLL_MODE = 0;
 	private static final int FLING_MODE = 1;
 
@@ -187,6 +187,10 @@ class Scroller {
 	 */
 	public final int getDuration() {
 		return mDuration;
+	}
+	
+	public void setDuration(int duration) {
+		DEFAULT_DURATION = duration;
 	}
 
 	/**

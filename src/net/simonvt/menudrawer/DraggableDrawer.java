@@ -47,7 +47,15 @@ public abstract class DraggableDrawer extends MenuDrawer {
 	/**
 	 * The duration of the peek animation.
 	 */
-	protected static final int PEEK_DURATION = 5000;
+	protected static int PEEK_DURATION = 5000;
+
+	public int getPEEK_DURATION() {
+		return PEEK_DURATION;
+	}
+
+	public void setPEEK_DURATION(int pEEK_DURATION) {
+		PEEK_DURATION = pEEK_DURATION;
+	}
 
 	/**
 	 * Distance in dp from closed position from where the drawer is considered
@@ -91,6 +99,11 @@ public abstract class DraggableDrawer extends MenuDrawer {
 	 * The current pointer id.
 	 */
 	protected int mActivePointerId = INVALID_POINTER;
+
+	/***
+	 * The offset keeping the menu visible when closed
+	 */
+	protected int mClosingOffset = 0;
 
 	/**
 	 * The initial X position of a drag.
@@ -187,6 +200,7 @@ public abstract class DraggableDrawer extends MenuDrawer {
 
 		mScroller = new Scroller(context, MenuDrawer.SMOOTH_INTERPOLATOR);
 		mPeekScroller = new Scroller(context, DraggableDrawer.PEEK_INTERPOLATOR);
+		// mPeekScroller.setDuration(100);
 
 		mCloseEnough = dpToPx(DraggableDrawer.CLOSE_ENOUGH);
 	}
@@ -198,6 +212,10 @@ public abstract class DraggableDrawer extends MenuDrawer {
 				|| mDrawerState == STATE_CLOSING) {
 			openMenu(animate);
 		}
+	}
+
+	public void setOffsetWhileClosed(int mClosingOffset) {
+		this.mClosingOffset = mClosingOffset;
 	}
 
 	public boolean isMenuVisible() {
@@ -242,9 +260,9 @@ public abstract class DraggableDrawer extends MenuDrawer {
 			throw new IllegalArgumentException(
 					"startDelay must be zero or larger.");
 		}
-//		if (delay < 0) {
-//			throw new IllegalArgumentException("delay must be zero or larger");
-//		}
+		// if (delay < 0) {
+		// throw new IllegalArgumentException("delay must be zero or larger");
+		// }
 
 		removeCallbacks(mPeekRunnable);
 		removeCallbacks(mPeekStartRunnable);
@@ -438,7 +456,7 @@ public abstract class DraggableDrawer extends MenuDrawer {
 			mScroller.startScroll(startX, 0, dx, 0, duration);
 		} else {
 			setDrawerState(STATE_CLOSING);
-			mScroller.startScroll(startX, 0, dx, 0, duration);
+			mScroller.startScroll(startX, 0, dx + mClosingOffset, 0, duration);
 		}
 
 		startLayerTranslation();
@@ -481,33 +499,32 @@ public abstract class DraggableDrawer extends MenuDrawer {
 	 * Callback when each frame in the peek drawer animation should be drawn.
 	 */
 	private void peekDrawerInvalidate() {
-		
+
 		boolean holdPeek;
-		
-		if(mPeekDelay<0)
+
+		if (mPeekDelay < 0)
 			holdPeek = true;
-		else holdPeek = false;
-		
+		else
+			holdPeek = false;
+
 		if (mPeekScroller.computeScrollOffset(holdPeek)) {
 			final int oldX = (int) mOffsetPixels;
 			final int x = mPeekScroller.getCurrX();
-			
-			
-			
+
 			if (x != oldX)
 				setOffsetPixels(x);
 
-			if (!mPeekScroller.isFinished() ) {
-				
-//				Log.e("DraggableDrawer", "mPeekScroller is not finished");
-				
+			if (!mPeekScroller.isFinished()) {
+
+				// Log.e("DraggableDrawer", "mPeekScroller is not finished");
+
 				postOnAnimation(mPeekRunnable);
 				return;
 
-			} else if (mPeekDelay > 0){
-				
-//				Log.e("DraggableDrawer", "mPeekScroller is finished");
-				
+			} else if (mPeekDelay > 0) {
+
+				// Log.e("DraggableDrawer", "mPeekScroller is finished");
+
 				mPeekStartRunnable = new Runnable() {
 					@Override
 					public void run() {
@@ -516,8 +533,8 @@ public abstract class DraggableDrawer extends MenuDrawer {
 				};
 				if (mPeekDelay >= 0)
 					postDelayed(mPeekStartRunnable, mPeekDelay);
-//				else
-//					postDelayed(mPeekStartRunnable, 1000);
+				// else
+				// postDelayed(mPeekStartRunnable, 1000);
 			}
 		}
 
